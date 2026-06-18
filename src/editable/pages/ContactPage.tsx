@@ -1,41 +1,62 @@
-'use client'
-
-import { FileText, Mail, Megaphone } from 'lucide-react'
+import { Globe2, Mail, MapPin, Megaphone, Phone } from 'lucide-react'
+import { SITE_CONFIG } from '@/lib/site-config'
+import { fetchSiteFeed, type SitePost } from '@/lib/site-connector'
 import { pagesContent } from '@/editable/content/pages.content'
+import { getEditablePostImage } from '@/editable/cards/PostCards'
 import { EditableContactLeadForm } from '@/editable/components/EditableContactLeadForm'
 import { EditableSiteShell } from '@/editable/shell/EditableSiteShell'
 
-const desks = [
-  { icon: FileText, title: 'Editorial desk', body: 'Send story ideas, corrections, source material, and publication questions.' },
-  { icon: Megaphone, title: 'Media partnerships', body: 'Discuss distribution, syndication, newsroom collaborations, and campaigns.' },
-  { icon: Mail, title: 'General support', body: 'Reach the team for account, publishing, or site-related help.' },
+const contacts = [
+  { icon: Phone, title: 'Phone Number', value: '0761-8523-398' },
+  { icon: Mail, title: 'Email Address', value: `hello@${SITE_CONFIG.domain}` },
+  { icon: Globe2, title: 'Website', value: SITE_CONFIG.domain },
+  { icon: MapPin, title: 'Distribution Desk', value: 'Remote newsroom and campaign support' },
 ]
 
-export default function ContactPage() {
+const realPostImage = (posts: SitePost[], preferredIndex = 1) => {
+  const images = posts.map((post) => getEditablePostImage(post)).filter(Boolean)
+  return images[preferredIndex] || images[0] || ''
+}
+
+export default async function ContactPage() {
+  const feed = await fetchSiteFeed(24, { task: 'mediaDistribution', fresh: true, timeoutMs: 5000 }).catch(() => null)
+  const image = realPostImage(feed?.posts || [])
   return (
     <EditableSiteShell>
-      <main className="bg-[#f7f4ef] text-[#111]">
-        <section className="border-b border-black bg-white">
-          <div className="mx-auto max-w-[var(--editable-container)] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-[#c92f2f]">{pagesContent.contact.eyebrow}</p>
-            <h1 className="editorial-brand mt-4 max-w-5xl text-6xl font-black leading-[0.92] tracking-[-0.055em] sm:text-8xl">{pagesContent.contact.title}</h1>
-            <p className="mt-6 max-w-2xl border-l-4 border-[#c92f2f] pl-5 text-base font-semibold leading-8 text-black/65">{pagesContent.contact.description}</p>
+      <main className="bg-white text-[#20242c]">
+        <section className="bg-[#111a2c] text-white">
+          <div className="mx-auto grid max-w-[1280px] gap-8 px-4 py-14 sm:px-6 lg:grid-cols-[.82fr_1.18fr] lg:items-end lg:px-8 lg:py-20">
+            <div>
+              <p className="inline-flex bg-[#f5bd2d] px-4 py-2 text-xs font-black uppercase tracking-[.22em] text-[#111a2c]">{pagesContent.contact.eyebrow}</p>
+              <h1 className="mt-7 text-5xl font-black leading-tight sm:text-6xl">{pagesContent.contact.title}</h1>
+            </div>
+            <p className="max-w-2xl border-l-4 border-[#f5bd2d] pl-5 text-base font-semibold leading-8 text-white/72">{pagesContent.contact.description}</p>
           </div>
         </section>
 
-        <section className="mx-auto grid max-w-[var(--editable-container)] border-x border-black bg-white lg:grid-cols-[0.72fr_1.28fr]">
-          <aside className="border-b border-black bg-[#171717] text-white lg:border-b-0 lg:border-r">
-            {desks.map((desk, index) => (
-              <div key={desk.title} className="border-b border-white/25 p-7 last:border-b-0 sm:p-9">
-                <div className="flex items-center justify-between"><desk.icon className="h-5 w-5 text-[#f34a43]" /><span className="text-xs font-black text-white/45">0{index + 1}</span></div>
-                <h2 className="editorial-serif mt-6 text-3xl font-black">{desk.title}</h2>
-                <p className="mt-3 text-sm leading-7 text-white/65">{desk.body}</p>
+        <section className="mx-auto grid max-w-[1280px] gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[.95fr_1.05fr] lg:px-8 lg:py-20">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="relative min-h-[300px] overflow-hidden bg-[#edf0f5] sm:col-span-2">
+              {image ? <img src={"/favicon.png"} alt="" className="absolute inset-0 h-full w-full object-cover opacity-65" /> : <img src={"/favicon.png"} alt="" className="absolute inset-0 h-full w-full object-cover opacity-65" />}
+              <div className="absolute inset-0 bg-[#111a2c]/20" />
+            </div>
+            <div className="bg-[#111a2c] p-7 text-white sm:col-span-2">
+              <Megaphone className="h-10 w-10 text-[#f5bd2d]" />
+              <h2 className="mt-5 text-2xl font-black">Media distribution support</h2>
+              <p className="mt-3 text-sm leading-7 text-white/70">Send release details, source questions, corrections, or campaign partnership notes.</p>
+            </div>
+            {contacts.map((item) => (
+              <div key={item.title} className="bg-[#111a2c] p-6 text-white">
+                <item.icon className="h-8 w-8 text-[#f5bd2d]" />
+                <h3 className="mt-4 text-lg font-black">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-white/78">{item.value}</p>
               </div>
             ))}
-          </aside>
-          <div className="p-6 sm:p-10 lg:p-14">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#c92f2f]">Send a message</p>
-            <h2 className="editorial-serif mt-3 text-4xl font-black">{pagesContent.contact.formTitle}</h2>
+          </div>
+
+          <div>
+            <p className="inline-flex bg-[#f5bd2d] px-4 py-2 text-xs font-black uppercase tracking-[.22em] text-[#111a2c]">Connect With Us</p>
+            <h2 className="mt-6 text-5xl font-black leading-tight">{pagesContent.contact.formTitle}</h2>
             <EditableContactLeadForm />
           </div>
         </section>
